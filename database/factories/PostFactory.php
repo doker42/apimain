@@ -26,7 +26,7 @@ class PostFactory extends Factory
         return [
             'title' => fake()->jobTitle(),
             'content' => fake()->text(),
-            'user_id' => (int)array_rand($userIds)
+            'user_id' => $userIds[array_rand($userIds,1)]
         ];
     }
 }

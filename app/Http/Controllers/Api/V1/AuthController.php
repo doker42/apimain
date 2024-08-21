@@ -69,6 +69,7 @@ class AuthController extends Controller
         if (!$result->error) {
 
             return response()->json([
+                'success' => true,
                 'user' => new UserResource($user),
                 'authorization' => $result->token
             ]);
@@ -76,8 +77,9 @@ class AuthController extends Controller
         else {
 
             return response()->json([
-                'error' => $result->error,
-                'error_message' => $result->error_message
+                'success' => false,
+                'error'   => $result->error,
+                'message' => $result->error_message
             ], 401);
         }
     }
@@ -159,6 +161,7 @@ class AuthController extends Controller
                     if (!$result->error) {
 
                         return response()->json([
+                            'success' => true,
                             'user' => new UserResource($user),
                             'authorization' => $result->token
                         ]);
@@ -166,8 +169,9 @@ class AuthController extends Controller
                     else {
 
                         return response()->json([
+                            'success' => false,
                             'error' => $result->error,
-                            'error_message' => $result->error_message
+                            'message' => $result->error_message
                         ], 401);
                     }
                 }
@@ -178,13 +182,16 @@ class AuthController extends Controller
             Log::info('LOGIN Error message: ' . $e->getMessage());
 
             return response()->json([
+                'success' => false,
                 'message' => __('auth.token.cant')
             ], 422);
         }
 
-        $request->authenticate(true);
+//        $request->authenticate(true);
 
-        return response()->json(['message' => trans('auth.failed')], 422);
+        return response()->json([
+            'message' => trans('auth.failed')
+        ], 422);
     }
 
 
@@ -199,6 +206,7 @@ class AuthController extends Controller
         $user->token()->revoke();
         return response()
             ->json([
+                'success' => true,
                 'message' => __("Successfully logged out"),
             ]);
     }
