@@ -35,4 +35,27 @@ return [
         ],
     ],
 
+    'search' => [
+        'enabled' => env('SEARCH_ENABLED', false),
+        'hosts'   => explode(',', env('ELASTICSEARCH_HOSTS')),
+    ],
+
+    'currency_api' => [
+
+        'free' => [
+
+            'base_url' => env('CURRENCY_BANK_API_URL', 'https://api.freecurrencyapi.com/v1/latest?apikey=fca_live_n4r4oLOruKB426bC3UXpinIOEF7jQWpQ7nM358ad'),
+
+            'key' => 'fca_live_n4r4oLOruKB426bC3UXpinIOEF7jQWpQ7nM358ad',
+        ],
+
+        'freaks' => [
+
+            'base_url' => 'https://api.currencyfreaks.com/v2.0/rates/latest?apikey=YOUR_APIKEY',
+
+            'key' => 'f115da5e5ef341d1bb662b9c7d7005fa',
+        ]
+
+    ],
+
 ];
