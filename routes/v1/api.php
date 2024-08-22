@@ -8,42 +8,6 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 
-//use Elasticsearch;
-
-
-
-
-Route::get('foo', function () {
-
-    $source = \App\Currencies\CurrencyManager::getSource();
-
-    dump($source->getId());
-//    $rates = $source->rates();
-//    dump($rates);
-
-
-
-
-//    $stats = Elasticsearch::nodes()->stats();
-
-
-
-//    $arr = [1,3,4,5];
-//
-//
-////    $i = 10;
-//
-//    for ($i = 0; $i<10;  $i++) {
-////        dump($i);
-//        $rand = $arr[array_rand($arr,1)];
-//        echo($rand . ' ' . PHP_EOL);
-//    }
-
-
-
-});
-
-
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('register', 'register');
