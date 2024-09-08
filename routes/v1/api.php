@@ -74,6 +74,10 @@ Route::group([
             Route::delete('/avatar', 'deleteAvatar');
             Route::post('/avatar', 'updateAvatar');
             Route::get('/avatar', 'showAvatar');
+
+            Route::delete('/image', 'deleteImage');
+            Route::post('/image', 'updateImage');
+            Route::get('/image', 'showImage');
         });
     });
 

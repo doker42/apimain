@@ -38,4 +38,12 @@ class StorageLocalPublic
     {
         return $this->storage->putFileAs($dir, $file, $filename);
     }
+
+
+    public function put(string $path, UploadedFile|string $file)
+    {
+        return $this->storage->put($path, $file);
+    }
+
+
 }

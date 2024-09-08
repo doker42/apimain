@@ -3,11 +3,21 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Common\ImageManager;
 use App\Traits\UserTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\HasApiTokens;
+
+
+/**
+ * @property string $avatar
+ * @property string $image
+ * @property string $name
+ * @property string $email
+ */
 
 class User extends Authenticatable
 {
@@ -25,6 +35,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar',
+        'image'
     ];
 
     /**
@@ -48,5 +60,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+
+    /**
+     * @return string|null
+     */
+    public function getImageUrl(): string|null
+    {
+        return asset('storage' .  ImageManager::DIR_IMAGES . '/' . $this->image);
     }
 }

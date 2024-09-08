@@ -47,9 +47,6 @@ class AvatarManager
     }
 
 
-
-
-
     /**
      * @param $image
      * @param $filename
@@ -69,9 +66,6 @@ class AvatarManager
 
         return $filename;
     }
-
-
-
 
 
     /**

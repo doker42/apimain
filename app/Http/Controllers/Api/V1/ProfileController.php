@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Common\AvatarManager;
+use App\Common\ImageManager;
 use App\Common\StorageLocalPublic;
 use App\Events\UserEmailUpdateEvent;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserImageUpdateRequest;
 use App\Http\Requests\V1\AvatarUpdateRequest;
 use App\Http\Requests\V1\PasswordUpdateRequest;
 use App\Http\Requests\V1\UserUpdateRequest;
 use App\Http\Resources\V1\UserResource;
+use App\Services\Images\TinifyService;
 use App\Traits\ApiHelperTrait;
 use App\Mail\ResetPasswordNotUserMail;
 use App\Models\EmailSet;
@@ -24,18 +27,22 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
     use ApiHelperTrait;
 
-    public AvatarManager $manager;
+    public AvatarManager $avatarManager;
+
+    public ImageManager $imageManager;
 
 
     public function __construct(StorageLocalPublic $storage)
     {
-        $this->manager = new AvatarManager($storage);
+        $this->avatarManager = new AvatarManager($storage);
+        $this->imageManager  = new ImageManager($storage);
     }
 
     /**
@@ -312,12 +319,20 @@ class ProfileController extends Controller
     /**
      * @return JsonResponse
      */
-    public function showAvatar()
+    public function showAvatar(): JsonResponse
     {
         $user = auth()->user();
+        $avatar = $user->avatar;
+
+        if ($avatar) {
+            return response()->json([
+                'avatar' => $this->avatarManager->getThumbnails($user->avatar, array_keys(config('images.profile.avatar')))
+            ], 200);
+        }
 
         return response()->json([
-            'avatar' => $this->manager->getThumbnails($user->avatar, array_keys(config('images.profile.avatar')))
+            'message' => __('User does not have avatar'),
+            'avatar' => $avatar
         ], 200);
     }
 
@@ -334,18 +349,18 @@ class ProfileController extends Controller
 
         if ($request->avatar) {
             /* store new avatars */
-            $avatar_name = $this->manager->store($request->avatar, config('images.profile.avatar'));
+            $avatar_name = $this->avatarManager->store($request->avatar, config('images.profile.avatar'));
         }
 
         if ($avatar_name && $user->update(['avatar' => $avatar_name])) {
             /* remove old avatars */
             if ($old_avatar_name) {
-                $this->manager->deleteAll($old_avatar_name, AvatarManager::DIR_AVATARS, config('images.profile.avatar'));
+                $this->avatarManager->deleteAll($old_avatar_name, AvatarManager::DIR_AVATARS, config('images.profile.avatar'));
             }
 
             return response()->json([
                 'message' => __('Avatar has been successfully updated.'),
-                'avatar'  => $this->manager->getThumbnails($user->avatar, array_keys(config('images.profile.avatar')))
+                'avatar'  => $this->avatarManager->getThumbnails($user->avatar, array_keys(config('images.profile.avatar')))
             ], 200);
         }
 
@@ -366,7 +381,7 @@ class ProfileController extends Controller
 
         if ($avatar) {
 
-            $this->manager->deleteAll($user->avatar, AvatarManager::DIR_AVATARS, config('images.profile.avatar'));
+            $this->avatarManager->deleteAll($user->avatar, AvatarManager::DIR_AVATARS, config('images.profile.avatar'));
 
             $user->update(['avatar' => null]);
 
@@ -380,6 +395,48 @@ class ProfileController extends Controller
                 'message' => __('No avatar.'),
             ], 422);
         }
+    }
+
+
+
+    public function showImage(): JsonResponse
+    {
+        $user = auth()->user();
+
+        return response()->json([
+            'image' => $user->getImageUrl()
+        ], 200);
+    }
+
+
+
+    public function updateImage(UserImageUpdateRequest $request): JsonResponse
+    {
+        $user = auth()->user();
+        $image_name = null;
+        $old_image_name = $user->image;
+
+        if ($request->image) {
+            /* save new user image */
+            $image = $request->image;
+            $image_name = $this->imageManager->storeAndResize($image);
+        }
+
+        if ($image_name && $user->update(['image' => $image_name])) {
+            /* remove old image */
+            if ($old_image_name) {
+                $this->imageManager->delete($old_image_name, AvatarManager::DIR_AVATARS);
+            }
+
+            return response()->json([
+                'message' => __('Image has been successfully updated.'),
+                'image' => $user->getImageUrl(),
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => __('Failed to update image.')
+        ], 500);
     }
 
 }
